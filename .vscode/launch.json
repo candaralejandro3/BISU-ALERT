@@ -1,0 +1,35 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "BISU-ALERT",
+            "cwd": "BISU-ALERT",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "BISU-ALERT (profile mode)",
+            "cwd": "BISU-ALERT",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "BISU-ALERT (Chrome)",
+            "cwd": "BISU-ALERT",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "chrome"
+        },
+        {
+            "name": "BISU-ALERT (release mode)",
+            "cwd": "BISU-ALERT",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

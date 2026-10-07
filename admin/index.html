@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BISU-ALERT | Central Admin & Responder Operations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo-shield">
+        <span class="logo-icon">🛡️</span>
+      </div>
+      <div class="brand-text">
+        <h2>BISU-ALERT</h2>
+        <span class="campus-badge">Bilar Campus Operations</span>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <div class="nav-section">COMMAND CENTER</div>
+      <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+        <span class="badge badge-pulse" id="side-active-count">3</span>
+      </a>
+      <a href="#incidents" class="nav-item" data-tab="incidents">
+        <span class="nav-icon">🚨</span>
+        <span>Manage Incidents</span>
+        <span class="badge" id="side-pending-count">12</span>
+      </a>
+      <a href="#sos" class="nav-item" data-tab="sos">
+        <span class="nav-icon">🆘</span>
+        <span>Manage SOS Alerts</span>
+        <span class="badge badge-danger">LIVE</span>
+      </a>
+      <a href="#responders" class="nav-item" data-tab="responders">
+        <span class="nav-icon">👮‍♂️</span>
+        <span>Manage Responders</span>
+      </a>
+      <a href="#analytics" class="nav-item" data-tab="analytics">
+        <span class="nav-icon">📊</span>
+        <span>Incident Analytics</span>
+        <span class="badge" style="background:#059669; color:#fff; font-weight:800;">THESIS</span>
+      </a>
+
+      <div class="nav-section">CAMPUS DIRECTORY</div>
+      <a href="#users" class="nav-item" data-tab="users">
+        <span class="nav-icon">👥</span>
+        <span>Users & Students</span>
+      </a>
+      <a href="#locations" class="nav-item" data-tab="locations">
+        <span class="nav-icon">🏢</span>
+        <span>Buildings & Zones</span>
+      </a>
+      <a href="#contacts" class="nav-item" data-tab="contacts">
+        <span class="nav-icon">📞</span>
+        <span>Emergency Contacts</span>
+      </a>
+
+      <div class="nav-section">DISPATCH & COMMS</div>
+      <a href="#announcements" class="nav-item" data-tab="announcements">
+        <span class="nav-icon">📢</span>
+        <span>Announcements & Weather</span>
+      </a>
+      <a href="#logs" class="nav-item" data-tab="logs">
+        <span class="nav-icon">📜</span>
+        <span>Activity Audit Logs</span>
+      </a>
+      <a href="#settings" class="nav-item" data-tab="settings">
+        <span class="nav-icon">⚙️</span>
+        <span>System Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar" id="sidebar-user-avatar">SA</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">System Administrator</div>
+          <div class="user-role" id="sidebar-user-role">Campus Operations</div>
+        </div>
+      </div>
+      <button class="logout-btn" id="btn-sidebar-logout" title="Sign out of Admin Dashboard">
+        <span class="nav-icon">🚪</span>
+        <span>Sign Out</span>
+      </button>
+      <div class="system-status">
+        <span class="status-dot online"></span>
+        <span id="backend-status-text">MySQL Backend Live</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Workspace -->
+  <main class="main-content">
+    <!-- Top Header -->
+    <header class="top-bar">
+      <div class="header-search">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="global-search" placeholder="Search reference code, landmark, student name...">
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-outline" id="btn-broadcast-alert">
+          <span>📢</span> Broadcast Advisory
+        </button>
+        <button class="btn btn-danger" id="btn-mock-sos">
+          <span>🆘</span> Simulate SOS Trigger
+        </button>
+        <button class="btn btn-outline btn-logout-top" id="btn-header-logout" title="Sign Out">
+          <span>🚪</span> Logout
+        </button>
+        <div class="time-clock" id="live-clock">--:--:-- PM</div>
+      </div>
+    </header>
+
+
+    <!-- CONTENT SECTIONS -->
+
+    <!-- TAB 1: DASHBOARD -->
+    <section id="tab-dashboard" class="tab-panel active">
+      <div class="page-title-row">
+        <div>
+          <h1>Operations Command Overview</h1>
+          <p class="subtitle">Real-time incident response monitoring for Bohol Island State University - Bilar Campus</p>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-refresh-data">
+          <span>🔄</span> Refresh Feed
+        </button>
+      </div>
+
+      <!-- Live Metric Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card danger-card">
+          <div class="metric-header">
+            <span class="metric-icon">🆘</span>
+            <span class="metric-badge blink">CRITICAL</span>
+          </div>
+          <div class="metric-value" id="val-active-emergencies">03</div>
+          <div class="metric-label">Active Emergencies</div>
+          <div class="metric-sub">Requires instant security dispatch</div>
+        </div>
+
+        <div class="metric-card warning-card">
+          <div class="metric-header">
+            <span class="metric-icon">⏳</span>
+            <span class="metric-badge">QUEUED</span>
+          </div>
+          <div class="metric-value" id="val-pending-reports">12</div>
+          <div class="metric-label">Pending Reports</div>
+          <div class="metric-sub">Awaiting verification & triage</div>
+        </div>
+
+        <div class="metric-card info-card">
+          <div class="metric-header">
+            <span class="metric-icon">🚒</span>
+            <span class="metric-badge">DISPATCHED</span>
+          </div>
+          <div class="metric-value" id="val-responding">04</div>
+          <div class="metric-label">Responding Units</div>
+          <div class="metric-sub">Units active on-scene</div>
+        </div>
+
+        <div class="metric-card success-card">
+          <div class="metric-header">
+            <span class="metric-icon">✅</span>
+            <span class="metric-badge">TODAY</span>
+          </div>
+          <div class="metric-value" id="val-resolved-today">18</div>
+          <div class="metric-label">Resolved Today</div>
+          <div class="metric-sub">Avg resolution time: 8.4 mins</div>
+        </div>
+      </div>
+
+      <!-- Middle Grid: Live Map & Incident Breakdown -->
+      <div class="dashboard-split-grid">
+        <!-- Live Incident Map Card -->
+        <div class="card map-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-icon">🗺️</span>
+              <h3>LIVE INCIDENT CAMPUS MAP</h3>
+            </div>
+            <div class="map-legend">
+              <span class="legend-item"><span class="dot red"></span> Medical</span>
+              <span class="legend-item"><span class="dot orange"></span> Security</span>
+              <span class="legend-item"><span class="dot yellow"></span> Fire</span>
+              <span class="legend-item"><span class="dot green"></span> Safe Zones</span>
+            </div>
+          </div>
+          <div class="map-container" id="campus-map-container">
+            <!-- Simulated High-Precision Interactive Vector Campus Map -->
+            <svg class="campus-svg-map" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg">
+              <!-- Campus Boundary Background -->
+              <defs>
+                <linearGradient id="grassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#142c1f"/>
+                  <stop offset="100%" stop-color="#0e1f16"/>
+                </linearGradient>
+                <filter id="glowEffect" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                </filter>
+              </defs>
+
+              <rect width="800" height="480" fill="url(#grassGrad)"/>
+
+              <!-- Campus Boundary Polygon -->
+              <polygon points="120,40 380,30 680,80 740,240 680,410 440,450 180,420 80,260" 
+                       fill="#1b3827" stroke="#2e7d32" stroke-width="2.5" stroke-dasharray="8 4"/>
+
+              <!-- Campus Internal Roads / Walkways -->
+              <path d="M 120,260 Q 300,240 500,250 T 740,240" fill="none" stroke="#2d4a36" stroke-width="12" stroke-linecap="round"/>
+              <path d="M 380,30 L 380,430" fill="none" stroke="#2d4a36" stroke-width="10" stroke-linecap="round"/>
+              <path d="M 220,130 L 580,360" fill="none" stroke="#2d4a36" stroke-width="8" stroke-linecap="round"/>
+
+              <!-- Evacuation Assembly Area A -->
+              <ellipse cx="260" cy="140" rx="70" ry="45" fill="#245135" stroke="#4caf50" stroke-width="2"/>
+              <text x="260" y="145" fill="#a5d6a7" font-size="11" font-weight="700" text-anchor="middle">🟡 Evacuation Grounds A</text>
+
+              <!-- Main Buildings -->
+              <!-- Admin Building -->
+              <g class="map-bldg" transform="translate(390, 160)">
+                <rect width="90" height="50" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                <text x="45" y="28" fill="#93c5fd" font-size="10" font-weight="700" text-anchor="middle">ADMIN BLDG</text>
+              </g>
+
+              <!-- CAF Building -->
+              <g class="map-bldg" transform="translate(180, 290)">
+                <rect width="80" height="45" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                <text x="40" y="26" fill="#93c5fd" font-size="10" font-weight="700" text-anchor="middle">CAF BLDG</text>
+              </g>
+
+              <!-- CCT / Tech Building -->
+              <g class="map-bldg" transform="translate(480, 310)">
+                <rect width="95" height="50" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                <text x="47" y="28" fill="#93c5fd" font-size="10" font-weight="700" text-anchor="middle">CCT COMPUTER</text>
+              </g>
+
+              <!-- Gymnasium / Student Center -->
+              <g class="map-bldg" transform="translate(490, 90)">
+                <rect width="110" height="65" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                <text x="55" y="36" fill="#93c5fd" font-size="10" font-weight="700" text-anchor="middle">STUDENT CENTER</text>
+              </g>
+
+              <!-- Clinic Hub -->
+              <g class="map-bldg" transform="translate(330, 240)">
+                <rect width="70" height="40" rx="6" fill="#3b1d22" stroke="#ef4444" stroke-width="2"/>
+                <text x="35" y="24" fill="#fca5a5" font-size="10" font-weight="700" text-anchor="middle">🏥 CLINIC</text>
+              </g>
+
+              <!-- Main Gate 1 -->
+              <g class="map-bldg" transform="translate(670, 220)">
+                <circle cx="20" cy="20" r="18" fill="#3b2b14" stroke="#f59e0b" stroke-width="2"/>
+                <text x="20" y="24" fill="#fcd34d" font-size="9" font-weight="800" text-anchor="middle">GATE 1</text>
+              </g>
+
+              <!-- Live Incident Hotspots with Pulse Rings -->
+              <!-- Medical Emergency at Student Center -->
+              <g class="incident-pin active-pin" transform="translate(545, 120)" onclick="selectIncidentByRef('INC-2026-00124')">
+                <circle cx="0" cy="0" r="22" class="pulse-ring red-ring"/>
+                <circle cx="0" cy="0" r="11" fill="#ef4444" stroke="#ffffff" stroke-width="2.5"/>
+                <text x="0" y="4" fill="#ffffff" font-size="11" font-weight="900" text-anchor="middle">!</text>
+                <text x="0" y="-18" fill="#ff6b6b" font-size="11" font-weight="800" text-anchor="middle">🔴 Medical SOS</text>
+              </g>
+
+              <!-- Fire Hazard at Maintenance / CCT -->
+              <g class="incident-pin" transform="translate(530, 335)" onclick="selectIncidentByRef('INC-2026-00125')">
+                <circle cx="0" cy="0" r="18" class="pulse-ring yellow-ring"/>
+                <circle cx="0" cy="0" r="10" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+                <text x="0" y="3" fill="#ffffff" font-size="10" font-weight="900" text-anchor="middle">🔥</text>
+                <text x="0" y="-15" fill="#fcd34d" font-size="10" font-weight="700" text-anchor="middle">🟡 Electrical Fire</text>
+              </g>
+
+              <!-- Security Issue at Gate 2 -->
+              <g class="incident-pin" transform="translate(190, 315)" onclick="selectIncidentByRef('INC-2026-00126')">
+                <circle cx="0" cy="0" r="18" class="pulse-ring orange-ring"/>
+                <circle cx="0" cy="0" r="10" fill="#f97316" stroke="#ffffff" stroke-width="2"/>
+                <text x="0" y="3" fill="#ffffff" font-size="10" font-weight="900" text-anchor="middle">🛡️</text>
+                <text x="0" y="-15" fill="#fdba74" font-size="10" font-weight="700" text-anchor="middle">🟠 Unauthorized Entry</text>
+              </g>
+            </svg>
+            <div class="map-overlay-tip">💡 Click any incident marker on the map to immediately dispatch or view case details</div>
+          </div>
+        </div>
+
+        <!-- Category Breakdown & Response Time -->
+        <div class="card stats-breakdown-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-icon">📈</span>
+              <h3>INCIDENT DISTRIBUTION</h3>
+            </div>
+            <span class="text-muted">This Month</span>
+          </div>
+
+          <div class="category-bars">
+            <div class="cat-bar-item">
+              <div class="cat-bar-header">
+                <span>🔴 Medical Emergencies</span>
+                <span class="cat-bar-count">14 cases (42%)</span>
+              </div>
+              <div class="progress-track"><div class="progress-fill red-fill" style="width: 42%;"></div></div>
+            </div>
+
+            <div class="cat-bar-item">
+              <div class="cat-bar-header">
+                <span>🟠 Security Incidents</span>
+                <span class="cat-bar-count">9 cases (28%)</span>
+              </div>
+              <div class="progress-track"><div class="progress-fill orange-fill" style="width: 28%;"></div></div>
+            </div>
+
+            <div class="cat-bar-item">
+              <div class="cat-bar-header">
+                <span>🟡 Fire & Electrical Hazards</span>
+                <span class="cat-bar-count">5 cases (15%)</span>
+              </div>
+              <div class="progress-track"><div class="progress-fill yellow-fill" style="width: 15%;"></div></div>
+            </div>
+
+            <div class="cat-bar-item">
+              <div class="cat-bar-header">
+                <span>🔵 Facility & Property Damage</span>
+                <span class="cat-bar-count">5 cases (15%)</span>
+              </div>
+              <div class="progress-track"><div class="progress-fill blue-fill" style="width: 15%;"></div></div>
+            </div>
+          </div>
+
+          <div class="responder-on-duty-box">
+            <div class="on-duty-header">
+              <h4>Active Responders on Duty</h4>
+              <span class="badge badge-success">4 Available</span>
+            </div>
+            <div class="duty-list">
+              <div class="duty-chip"><span class="duty-dot"></span> Ramon Bautista (Lead Security)</div>
+              <div class="duty-chip"><span class="duty-dot"></span> Liza Mercado (Clinic Nurse)</div>
+              <div class="duty-chip"><span class="duty-dot"></span> Mario Villanueva (Maintenance)</div>
+              <div class="duty-chip"><span class="duty-dot"></span> Officer D. Torralba (Gate 1 Post)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom: Recent Incidents Table -->
+      <div class="card table-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">📋</span>
+            <h3>RECENT EMERGENCY & INCIDENT LOGS</h3>
+          </div>
+          <div class="table-filters">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="pending">🟡 Pending</button>
+            <button class="filter-pill" data-filter="responding">🟠 Responding</button>
+            <button class="filter-pill" data-filter="resolved">🟢 Resolved</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="incidents-table">
+            <thead>
+              <tr>
+                <th>Reference ID</th>
+                <th>Category</th>
+                <th>Location / Landmark</th>
+                <th>Reporter</th>
+                <th>Reported Time</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assigned Responder</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="incidents-table-body">
+              <!-- Rendered via app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: INCIDENT MANAGEMENT -->
+    <section id="tab-incidents" class="tab-panel">
+      <div class="page-title-row">
+        <div>
+          <h1>Incident Triage & Response Manager</h1>
+          <p class="subtitle">Assign officers, verify GPS telemetry, and update live operational statuses</p>
+        </div>
+      </div>
+      <div id="incidents-manager-content">
+        <!-- Expanded incident list & triage controls -->
+      </div>
+    </section>
+
+    <!-- TAB 3: SOS ALERTS -->
+    <section id="tab-sos" class="tab-panel">
+      <div class="page-title-row">
+        <div>
+          <h1>Live SOS Panic Button Dispatches</h1>
+          <p class="subtitle">Direct panic button triggers requiring immediate physical security presence</p>
+        </div>
+      </div>
+      <div id="sos-manager-content">
+        <!-- Live SOS Cards -->
+      </div>
+    </section>
+
+    <!-- TAB 4: RESPONDERS -->
+    <section id="tab-responders" class="tab-panel">
+      <div class="page-title-row">
+        <div>
+          <h1>Campus Response Units & Officers</h1>
+          <p class="subtitle">Security guards, clinic medical staff, and emergency coordinators</p>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-add-responder">
+          <span>➕</span> Add Responder
+        </button>
+      </div>
+      <div id="responders-manager-content"></div>
+    </section>
+
+    <!-- TAB 5: USERS -->
+    <section id="tab-users" class="tab-panel">
+      <div class="page-title-row">
+        <div>
+          <h1>Campus Directory & Account Management</h1>
+          <p class="subtitle">Manage enrolled students, faculty members, personnel, and access roles</p>
+        </div>
+      </div>
+      <div id="users-manager-content"></div>
+    </section>
+
+    <!-- TAB 6: BUILDINGS & ZONES -->
+    <section id="tab-locations" class="tab-panel">
+      <div class="page-title-row">
+        <div>
+          <h1>Campus Landmarks & Evacuation Safe Zones</h1>
+          <p class="subtitle">Configure GPS geofences, emergency hubs, assembly areas, and building coordinates</p>
+        </div>
+      </div>
+      <div id="locations-manager-content"></div>
+    </section>
+
+    <!-- TAB 7: CONTACTS -->
+    <section id="tab-contacts" class="tab-panel">
+      <div class="page-title-row">
+        <div>
+          <h1>Emergency Contacts & Hotlines Directory</h1>
+          <p class="subtitle">Hotline telephone numbers used for direct 1-tap dial and offline fallbacks</p>
+        </div>
+      </div>
+      <div id="contacts-manager-content"></div>
+    </section>
+
+    <!-- TAB 8: ANNOUNCEMENTS & WEATHER -->
+    <section id="tab-announcements" class="tab-panel">
+      <div class="page-title-row">
+        <div>
+          <h1>Campus Announcements & Weather Advisories</h1>
+          <p class="subtitle">Broadcast push alerts and safety advisories directly to all student and faculty devices</p>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-new-announcement">
+          <span>➕</span> New Advisory
+        </button>
+      </div>
+      <div id="announcements-manager-content"></div>
+    </section>
+
+    <!-- TAB 9: AUDIT LOGS -->
+    <section id="tab-logs" class="tab-panel">
+      <div class="page-title-row">
+        <div>
+          <h1>System Activity & Forensic Audit Logs</h1>
+          <p class="subtitle">Cryptographically traced action logs for compliance and incident investigations</p>
+        </div>
+      </div>
+      <div id="logs-manager-content"></div>
+    </section>
+
+    <!-- TAB: INCIDENT ANALYTICS (THESIS DEFENSE) -->
+    <section id="tab-analytics" class="tab-panel">
+      <div class="page-title-row">
+        <div>
+          <h1>INCIDENT ANALYTICS & THESIS REPORT</h1>
+          <p class="subtitle">Bohol Island State University - Bilar Campus Emergency Response System Telemetry</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-outline btn-sm" onclick="exportAnalyticsCSV()">
+            <span>📥</span> Export Thesis Data (CSV)
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="window.print()">
+            <span>🖨️</span> Print Defense Report
+          </button>
+        </div>
+      </div>
+      <div id="analytics-manager-content"></div>
+    </section>
+
+    <!-- TAB 10: SETTINGS -->
+    <section id="tab-settings" class="tab-panel">
+      <div class="page-title-row">
+        <div>
+          <h1>System & Connectivity Settings</h1>
+          <p class="subtitle">MySQL database configuration, geofence radius, SMS gateway and Firebase keys</p>
+        </div>
+      </div>
+      <div id="settings-manager-content"></div>
+    </section>
+  </main>
+
+  <!-- Incident Detail / Action Modal -->
+  <div class="modal-backdrop" id="incident-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-badge" id="modal-priority-badge">CRITICAL</span>
+          <h3 id="modal-incident-title">Incident Details</h3>
+        </div>
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body-content">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="modal-footer" id="modal-footer-actions">
+        <!-- Actions: Accept, Respond, Resolve, Dismiss -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile-Style Auth Overlay Screen -->
+  <div id="auth-overlay" class="auth-overlay active">
+    <!-- Brand Backdrop with Watermark Seals -->
+    <div class="auth-backdrop">
+      <div class="watermark-wrap watermark-top-right">
+        <img src="assets/images/BISU-ALERT.png" alt="BISU Watermark Seal" class="auth-watermark">
+      </div>
+      <div class="watermark-wrap watermark-bottom-left">
+        <img src="assets/images/BISU-ALERT.png" alt="BISU Watermark Seal" class="auth-watermark">
+      </div>
+    </div>
+
+    <!-- Centered Form Container -->
+    <div class="auth-container">
+      <!-- App Brand Header -->
+      <div class="auth-brand-header">
+        <div class="auth-logo-stack">
+          <img src="assets/images/BISU-ALERT.png" alt="BISU-ALERT Logo" class="auth-logo-img">
+          <div class="auth-logo-sos-badge">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="auth-brand-meta">
+          <h2 class="auth-app-title">BISU-Alert</h2>
+          <p class="auth-app-subtitle">BISU Bilar Campus Emergency Response</p>
+        </div>
+      </div>
+
+      <!-- Auth Card -->
+      <div class="auth-card">
+        <div class="auth-card-titles">
+          <h1 class="auth-card-title">Sign in</h1>
+          <p class="auth-card-subtitle">
+            See where emergencies are located on the BISU-Bilar campus, and manage command center operations.
+          </p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="admin-login-form" class="auth-form" novalidate>
+          <!-- Error Banner -->
+          <div id="auth-error-banner" class="auth-error-banner" style="display: none;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="error-icon">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <span id="auth-error-message">Incorrect credentials.</span>
+          </div>
+
+          <!-- Email Input -->
+          <div class="auth-field-group">
+            <label for="login-email" class="auth-label">Campus email</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-field-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </span>
+              <input 
+                type="email" 
+                id="login-email" 
+                name="email" 
+                class="auth-input" 
+                placeholder="admin@bisu.edu.ph" 
+                required 
+                autocomplete="email"
+              >
+            </div>
+          </div>
+
+          <!-- Password Input -->
+          <div class="auth-field-group">
+            <label for="login-password" class="auth-label">Password</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-field-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <input 
+                type="password" 
+                id="login-password" 
+                name="password" 
+                class="auth-input" 
+                placeholder="••••••••" 
+                required 
+                autocomplete="current-password"
+              >
+              <button 
+                type="button" 
+                id="btn-toggle-password" 
+                class="auth-toggle-pwd" 
+                aria-label="Toggle password visibility"
+                title="Show / Hide password"
+              >
+                <svg id="pwd-icon-show" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg id="pwd-icon-hide" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Forgot Password Action -->
+          <div class="auth-aux-row">
+            <button type="button" class="auth-forgot-pill" id="btn-forgot-password">
+              Forgot password?
+            </button>
+          </div>
+
+          <!-- Sign In Submit Button -->
+          <button type="submit" id="btn-login-submit" class="auth-submit-btn">
+            <span class="submit-text">Sign In</span>
+            <span class="submit-spinner" style="display: none;"></span>
+          </button>
+        </form>
+
+        <!-- Demo Account Banner -->
+        <div class="auth-demo-card">
+          <div class="auth-demo-text">
+            <span class="auth-demo-title">Demo Admin Account</span>
+            <span class="auth-demo-creds">admin@bisu.edu.ph / admin123</span>
+          </div>
+          <button type="button" id="btn-demo-fill" class="auth-demo-fill-btn">
+            Fill
+          </button>
+        </div>
+      </div>
+
+      <!-- Campus Footer Note -->
+      <div class="auth-footer-notice">
+        <span>🛡️ Protected by BISU-ALERT Emergency Dispatch Security</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
