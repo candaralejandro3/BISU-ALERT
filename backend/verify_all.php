@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/backend/api/config/database.php';
+require_once __DIR__ . '/api/config/database.php';
 
 try {
     $pdo = db();

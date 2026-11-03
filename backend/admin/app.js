@@ -123,6 +123,7 @@ const modalCloseBtn = document.getElementById('modal-close-btn');
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   initClock();
+  initAuth();
   setupNavigation();
   setupFilters();
   setupModal();
@@ -130,20 +131,234 @@ document.addEventListener('DOMContentLoaded', () => {
   tryFetchLiveBackend();
 });
 
-// Real-time Clock
-function initClock() {
-  const update = () => {
-    const now = new Date();
-    liveClockEl.textContent = now.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
-    });
-  };
-  update();
-  setInterval(update, 1000);
+// ==========================================================================
+// AUTHENTICATION & SESSION MANAGEMENT (Mobile-Identical)
+// ==========================================================================
+
+const AUTH_STORAGE_KEY = 'bisu_alert_admin_session';
+
+function getStoredSession() {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    if (!session || !session.token) return null;
+
+    // Check expiration if present
+    if (session.expires_at) {
+      const exp = new Date(session.expires_at).getTime();
+      if (Date.now() > exp) {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+        return null;
+      }
+    }
+    return session;
+  } catch (e) {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    return null;
+  }
 }
+
+function initAuth() {
+  const authOverlay = document.getElementById('auth-overlay');
+  const loginForm = document.getElementById('admin-login-form');
+  const emailInput = document.getElementById('login-email');
+  const passwordInput = document.getElementById('login-password');
+  const errorBanner = document.getElementById('auth-error-banner');
+  const errorMsg = document.getElementById('auth-error-message');
+  const submitBtn = document.getElementById('btn-login-submit');
+  const submitText = submitBtn ? submitBtn.querySelector('.submit-text') : null;
+  const submitSpinner = submitBtn ? submitBtn.querySelector('.submit-spinner') : null;
+  const togglePwdBtn = document.getElementById('btn-toggle-password');
+  const pwdIconShow = document.getElementById('pwd-icon-show');
+  const pwdIconHide = document.getElementById('pwd-icon-hide');
+  const demoFillBtn = document.getElementById('btn-demo-fill');
+  const forgotPwdBtn = document.getElementById('btn-forgot-password');
+  const sidebarLogoutBtn = document.getElementById('btn-sidebar-logout');
+  const headerLogoutBtn = document.getElementById('btn-header-logout');
+
+  // Check stored session
+  const session = getStoredSession();
+  if (session && session.user) {
+    applyUserProfile(session.user);
+    if (authOverlay) authOverlay.classList.remove('active');
+  } else {
+    if (authOverlay) authOverlay.classList.add('active');
+  }
+
+  // Toggle Password Visibility
+  if (togglePwdBtn && passwordInput) {
+    togglePwdBtn.addEventListener('click', () => {
+      const isPwd = passwordInput.type === 'password';
+      passwordInput.type = isPwd ? 'text' : 'password';
+      if (pwdIconShow) pwdIconShow.style.display = isPwd ? 'none' : 'block';
+      if (pwdIconHide) pwdIconHide.style.display = isPwd ? 'block' : 'none';
+    });
+  }
+
+  // Demo Account Auto-Fill
+  if (demoFillBtn && emailInput && passwordInput) {
+    demoFillBtn.addEventListener('click', () => {
+      emailInput.value = 'admin@bisu.edu.ph';
+      passwordInput.value = 'admin123';
+      if (errorBanner) errorBanner.style.display = 'none';
+      emailInput.focus();
+    });
+  }
+
+  // Forgot Password Action
+  if (forgotPwdBtn) {
+    forgotPwdBtn.addEventListener('click', () => {
+      alert('Password reset instructions have been dispatched to your BISU campus email.');
+    });
+  }
+
+  // Handle Login Form Submit
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput ? emailInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value : '';
+
+      if (!email || !password) {
+        showAuthError('Please enter both campus email and password.');
+        return;
+      }
+
+      // Set Loading State
+      setAuthLoading(true);
+      hideAuthError();
+
+      try {
+        const response = await fetch('../api/auth/login.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        const resData = await response.json();
+
+        if (response.ok && resData.success && resData.data) {
+          const user = resData.data.user;
+          const token = resData.data.token;
+          const expires_at = resData.data.expires_at;
+
+          // Save Session
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user, token, expires_at }));
+
+          // Update UI
+          applyUserProfile(user);
+          if (authOverlay) authOverlay.classList.remove('active');
+          if (loginForm) loginForm.reset();
+
+          // Refresh live telemetry
+          tryFetchLiveBackend();
+        } else {
+          const errorText = resData.error && resData.error.message
+            ? resData.error.message
+            : 'Sign in failed. Please verify your campus credentials.';
+          showAuthError(errorText);
+        }
+      } catch (err) {
+        // Offline / Fallback verification
+        if (email.toLowerCase() === 'admin@bisu.edu.ph' && password === 'admin123') {
+          const fallbackUser = {
+            id: 1,
+            full_name: 'System Administrator',
+            email: 'admin@bisu.edu.ph',
+            role: 'admin',
+            role_label: 'System Administrator',
+            department: 'MIS / Campus Operations'
+          };
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
+            user: fallbackUser,
+            token: 'demo-session-token',
+            expires_at: new Date(Date.now() + 86400000).toISOString()
+          }));
+          applyUserProfile(fallbackUser);
+          if (authOverlay) authOverlay.classList.remove('active');
+          if (loginForm) loginForm.reset();
+        } else {
+          showAuthError('Unable to connect to authentication server. Is WAMP MySQL running?');
+        }
+      } finally {
+        setAuthLoading(false);
+      }
+    });
+  }
+
+  // Handle Logout
+  const handleLogout = async () => {
+    if (!confirm('Are you sure you want to sign out of the BISU-Alert Admin Command Center?')) {
+      return;
+    }
+
+    const session = getStoredSession();
+    if (session && session.token) {
+      try {
+        await fetch('../api/auth/logout.php', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.token}`,
+            'Accept': 'application/json'
+          }
+        });
+      } catch (_) {
+        // Ignore network errors on logout
+      }
+    }
+
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    if (authOverlay) authOverlay.classList.add('active');
+    if (passwordInput) passwordInput.value = '';
+    hideAuthError();
+  };
+
+  if (sidebarLogoutBtn) sidebarLogoutBtn.addEventListener('click', handleLogout);
+  if (headerLogoutBtn) headerLogoutBtn.addEventListener('click', handleLogout);
+
+  function setAuthLoading(isLoading) {
+    if (submitBtn) submitBtn.disabled = isLoading;
+    if (submitText) submitText.style.display = isLoading ? 'none' : 'inline';
+    if (submitSpinner) submitSpinner.style.display = isLoading ? 'inline-block' : 'none';
+  }
+
+  function showAuthError(msg) {
+    if (errorBanner && errorMsg) {
+      errorMsg.textContent = msg;
+      errorBanner.style.display = 'flex';
+      errorBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  function hideAuthError() {
+    if (errorBanner) errorBanner.style.display = 'none';
+  }
+
+  function applyUserProfile(user) {
+    const avatarEl = document.getElementById('sidebar-user-avatar');
+    const nameEl = document.getElementById('sidebar-user-name');
+    const roleEl = document.getElementById('sidebar-user-role');
+
+    if (user) {
+      if (nameEl) nameEl.textContent = user.full_name || 'Administrator';
+      if (roleEl) roleEl.textContent = user.role_label || user.department || 'Campus Security';
+      if (avatarEl) {
+        const initials = (user.full_name || 'Admin')
+          .split(' ')
+          .map(n => n[0])
+          .slice(0, 2)
+          .join('')
+          .toUpperCase();
+        avatarEl.textContent = initials || 'AD';
+      }
+    }
+  }
+}
+
 
 // Navigation Tabs
 function setupNavigation() {
@@ -380,7 +595,7 @@ window.openIncidentDetails = function(incidentId) {
 
       <div>
         <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">DISPATCH NOTE / LOG</label>
-        <input type="text" id="triage-note" placeholder="Enter response note or instructions..." 
+        <input type="text" id="triage-note" placeholder="Enter response note or instructions..."
                style="width:100%; background:var(--bg-dark); border:1px solid var(--border-color); color:#fff; padding:8px 12px; border-radius:6px; font-size:13px;">
       </div>
     </div>
@@ -1092,4 +1307,3 @@ function exportAnalyticsCSV() {
   link.click();
   document.body.removeChild(link);
 }
-

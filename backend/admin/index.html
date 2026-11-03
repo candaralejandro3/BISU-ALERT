@@ -80,17 +80,20 @@
 
     <div class="sidebar-footer">
       <div class="user-chip">
-        <div class="avatar">RB</div>
+        <div class="avatar" id="sidebar-user-avatar">SA</div>
         <div class="user-info">
-          <div class="user-name">Chief Ramon Bautista</div>
-          <div class="user-role">Lead Campus Security</div>
+          <div class="user-name" id="sidebar-user-name">System Administrator</div>
+          <div class="user-role" id="sidebar-user-role">Campus Operations</div>
         </div>
       </div>
+      <button class="logout-btn" id="btn-sidebar-logout" title="Sign out of Admin Dashboard">
+        <span class="nav-icon">🚪</span>
+        <span>Sign Out</span>
+      </button>
       <div class="system-status">
         <span class="status-dot online"></span>
         <span id="backend-status-text">MySQL Backend Live</span>
       </div>
-    <a href="logout.php" class="nav-item logout-link">Logout</a>
     </div>
   </aside>
 
@@ -110,9 +113,13 @@
         <button class="btn btn-danger" id="btn-mock-sos">
           <span>🆘</span> Simulate SOS Trigger
         </button>
+        <button class="btn btn-outline btn-logout-top" id="btn-header-logout" title="Sign Out">
+          <span>🚪</span> Logout
+        </button>
         <div class="time-clock" id="live-clock">--:--:-- PM</div>
       </div>
     </header>
+
 
     <!-- CONTENT SECTIONS -->
 
@@ -205,7 +212,7 @@
               <rect width="800" height="480" fill="url(#grassGrad)"/>
 
               <!-- Campus Boundary Polygon -->
-              <polygon points="120,40 380,30 680,80 740,240 680,410 440,450 180,420 80,260" 
+              <polygon points="120,40 380,30 680,80 740,240 680,410 440,450 180,420 80,260"
                        fill="#1b3827" stroke="#2e7d32" stroke-width="2.5" stroke-dasharray="8 4"/>
 
               <!-- Campus Internal Roads / Walkways -->
@@ -524,6 +531,148 @@
       </div>
       <div class="modal-footer" id="modal-footer-actions">
         <!-- Actions: Accept, Respond, Resolve, Dismiss -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile-Style Auth Overlay Screen -->
+  <div id="auth-overlay" class="auth-overlay active">
+    <!-- Brand Backdrop with Watermark Seals -->
+    <div class="auth-backdrop">
+      <div class="watermark-wrap watermark-top-right">
+        <img src="assets/images/BISU-ALERT.png" alt="BISU Watermark Seal" class="auth-watermark">
+      </div>
+      <div class="watermark-wrap watermark-bottom-left">
+        <img src="assets/images/BISU-ALERT.png" alt="BISU Watermark Seal" class="auth-watermark">
+      </div>
+    </div>
+
+    <!-- Centered Form Container -->
+    <div class="auth-container">
+      <!-- App Brand Header -->
+      <div class="auth-brand-header">
+        <div class="auth-logo-stack">
+          <img src="assets/images/BISU-ALERT.png" alt="BISU-ALERT Logo" class="auth-logo-img">
+          <div class="auth-logo-sos-badge">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="auth-brand-meta">
+          <h2 class="auth-app-title">BISU-Alert</h2>
+          <p class="auth-app-subtitle">BISU Bilar Campus Emergency Response</p>
+        </div>
+      </div>
+
+      <!-- Auth Card -->
+      <div class="auth-card">
+        <div class="auth-card-titles">
+          <h1 class="auth-card-title">Sign in</h1>
+          <p class="auth-card-subtitle">
+            See where emergencies are located on the BISU-Bilar campus, and manage command center operations.
+          </p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="admin-login-form" class="auth-form" novalidate>
+          <!-- Error Banner -->
+          <div id="auth-error-banner" class="auth-error-banner" style="display: none;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="error-icon">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <span id="auth-error-message">Incorrect credentials.</span>
+          </div>
+
+          <!-- Email Input -->
+          <div class="auth-field-group">
+            <label for="login-email" class="auth-label">Campus email</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-field-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </span>
+              <input
+                type="email"
+                id="login-email"
+                name="email"
+                class="auth-input"
+                placeholder="admin@bisu.edu.ph"
+                required
+                autocomplete="email"
+              >
+            </div>
+          </div>
+
+          <!-- Password Input -->
+          <div class="auth-field-group">
+            <label for="login-password" class="auth-label">Password</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-field-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <input
+                type="password"
+                id="login-password"
+                name="password"
+                class="auth-input"
+                placeholder="••••••••"
+                required
+                autocomplete="current-password"
+              >
+              <button
+                type="button"
+                id="btn-toggle-password"
+                class="auth-toggle-pwd"
+                aria-label="Toggle password visibility"
+                title="Show / Hide password"
+              >
+                <svg id="pwd-icon-show" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg id="pwd-icon-hide" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Forgot Password Action -->
+          <div class="auth-aux-row">
+            <button type="button" class="auth-forgot-pill" id="btn-forgot-password">
+              Forgot password?
+            </button>
+          </div>
+
+          <!-- Sign In Submit Button -->
+          <button type="submit" id="btn-login-submit" class="auth-submit-btn">
+            <span class="submit-text">Sign In</span>
+            <span class="submit-spinner" style="display: none;"></span>
+          </button>
+        </form>
+
+        <!-- Demo Account Banner -->
+        <div class="auth-demo-card">
+          <div class="auth-demo-text">
+            <span class="auth-demo-title">Demo Admin Account</span>
+            <span class="auth-demo-creds">admin@bisu.edu.ph / admin123</span>
+          </div>
+          <button type="button" id="btn-demo-fill" class="auth-demo-fill-btn">
+            Fill
+          </button>
+        </div>
+      </div>
+
+      <!-- Campus Footer Note -->
+      <div class="auth-footer-notice">
+        <span>🛡️ Protected by BISU-ALERT Emergency Dispatch Security</span>
       </div>
     </div>
   </div>
